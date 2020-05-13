@@ -1,8 +1,8 @@
-# GAP-functions and examples related to tau-tilting theory 
+# GAP-functions and examples related to tau-tilting theory
 
 # Important functions for our paper:
 # - MakeRigidTable: this produces the tables found in the appendix.
-# - HasseQuiver: this computes the Hasse quiver of the poset of support tau-tilting modules of an algebra A (if A is tau-tilting-infinite, this will not 
+# - HasseQuiver: this computes the Hasse quiver of the poset of support tau-tilting modules of an algebra A (if A is tau-tilting-infinite, this will not
 #                terminate; there is the option to specify a maximal distance from the free module of rank one after which the computation stops)
 # - CheckRelativeRigidness: checks whether D is C-presilted (use AllStringMaxLength to see how we represent strings in GAP)
 # - CheckSupportOrthogonality: Check whether a vertex e (corresponding to the PIM eA) is not in the support of the tau-rigid
@@ -14,15 +14,15 @@
 LoadPackage("qpa");
 
 DiagonalJoin := function(L)
-        local i, j, m, posr, posc, M;   
-    
+        local i, j, m, posr, posc, M;
+
         if Size(L) = 0 then
             Error("DiagonalJoin expects a list of at least one matrix");
         elif ForAny(L, l -> not IsMatrix(l)) then
             Error("DiagonalJoin expects its arguments to be matrices");
         fi;
 
-        M := MutableNullMat(Sum(List(L, l -> Size(l))), Sum(List(L, l -> Size(TransposedMat(l)))), 
+        M := MutableNullMat(Sum(List(L, l -> Size(l))), Sum(List(L, l -> Size(TransposedMat(l)))),
             DefaultField(L[1][1][1]));
         posr := 0;
         posc := 0;
@@ -43,7 +43,7 @@ end;
 ###############################################################################
 # Mutation-related stuff:
 
-TauMinMutateNC := function(M, X) 
+TauMinMutateNC := function(M, X)
     # X irreducible; M (+) X support tau-tilting
     local f, Y;
     f := MinimalLeftAddMApproximation(X, M);
@@ -51,23 +51,23 @@ TauMinMutateNC := function(M, X)
     return Y;
 end;
 
-IsBongartzCompletion := function(M, X) 
-    # X irreducible; M (+) X support tau-tilting 
+IsBongartzCompletion := function(M, X)
+    # X irreducible; M (+) X support tau-tilting
     return not IsZero(Dimension(CoKernel(RightFacMApproximation(M, X))));
 end;
 
 HasseQuiver := function(arg)
     # HasseQuiver(A): compute the Hasse-quiver of A (might not terminate)
-    # HasseQuiver(A, limit): compute the Hasse-Quiver of A, but stop 
-    #                        when (at least) limit support tau-tiltings 
+    # HasseQuiver(A, limit): compute the Hasse-Quiver of A, but stop
+    #                        when (at least) limit support tau-tiltings
     #                        have been found
     # returns [lst, Q], where Q is a quiver, and lst corresponds to the
-    # vertices of Q, i.e. lst[i] = [M0, ..., Mj], where 
-    # M0 (+) ... (+) Mj is the support tau-tilting module corresponding 
+    # vertices of Q, i.e. lst[i] = [M0, ..., Mj], where
+    # M0 (+) ... (+) Mj is the support tau-tilting module corresponding
     # to vertex i
-    local A, limit, vertex_id, last_layer, new_layer, all_layers, hasse_quiver, 
+    local A, limit, vertex_id, last_layer, new_layer, all_layers, hasse_quiver,
         tup,  i, M, X, Y, vx, new_el, tup2, is_new;
-    
+
     A := arg[1];
     if Size(arg) = 2 then
         limit := arg[2];
@@ -96,14 +96,14 @@ HasseQuiver := function(arg)
                 if Dimension(Y) = 0 then
                     new_el := tup[2]{Filtered([1..Size(tup[2])], j -> j <> i)};
                 else
-                    new_el := Concatenation([tup[2]{[1..i-1]}, [Y], 
+                    new_el := Concatenation([tup[2]{[1..i-1]}, [Y],
                                              tup[2]{[i+1..Size(tup[2])]}]);
                 fi;
-                
+
                 # Check if new_el is isomorphic to a module we found already:
                 is_new := true;
                 for tup2 in all_layers do
-                    if AsSet(List(tup2[2], DimensionVector)) 
+                    if AsSet(List(tup2[2], DimensionVector))
                             <> AsSet(List(new_el, DimensionVector)) then
                         continue;
                     fi;
@@ -114,13 +114,13 @@ HasseQuiver := function(arg)
                         vx := tup2[1];
                         break;
                     fi;
-                    
+
                     if IsZero(Dimension(CoKernel(RightFacMApproximation(
-                            DirectSumOfQPAModules(tup2[2]), 
+                            DirectSumOfQPAModules(tup2[2]),
                             DirectSumOfQPAModules(new_el)))))
                         and IsZero(Dimension(CoKernel(RightFacMApproximation(
-                            DirectSumOfQPAModules(new_el), 
-                            DirectSumOfQPAModules(tup2[2]))))) 
+                            DirectSumOfQPAModules(new_el),
+                            DirectSumOfQPAModules(tup2[2])))))
                         then
                         is_new := false;
                         vx := tup2[1];
@@ -138,7 +138,7 @@ HasseQuiver := function(arg)
         od;
         last_layer := new_layer;
     od;
-    
+
     return [List(all_layers, x -> x[2]), Quiver(vertex_id-1, hasse_quiver)];
 end;
 
@@ -179,12 +179,12 @@ PlotQuiver := function(Q)
 	PrintTo(fd, "digraph quiver {\nnode [shape = circle];");
 	for q in ArrowsOfQuiver(Q) do
 		PrintTo(fd, Concatenation([String(SourceOfPath(q)),
-            " -> ", String(TargetOfPath(q)), "[ label = \"", 
-			String(q), "\", fontsize=8, fontcolor=blue, tooltip=\"", 
+            " -> ", String(TargetOfPath(q)), "[ label = \"",
+			String(q), "\", fontsize=8, fontcolor=blue, tooltip=\"",
 			String(q),"\" ];\n"]));
 	od;
 	PrintTo(fd, "}\n");
-	CloseStream(fd); 
+	CloseStream(fd);
 	if ARCH_IS_MAC_OS_X() then
         Exec(Concatenation("open -a Graphviz ", fname));
     else
@@ -197,7 +197,7 @@ end;
 TauRigidsGVectors := function(A, n)
     local Q, lst, lst_supp, m, x, v, el, C;
     Q := HasseQuiver(A, n)[1];
-    lst := List(Q, l -> List(l, m -> DimensionVector(TopOfModule(m))- 
+    lst := List(Q, l -> List(l, m -> DimensionVector(TopOfModule(m))-
         DimensionVector(TopOfModule(1stSyzygy(m)))));
     m := Size(SimpleModules(A));
     lst_supp := [ ];
@@ -222,23 +222,23 @@ MakeSL2Example := function(f)
     local F, Q, kQ, gens, e, a, rels1, rels2, rels, A, name;
     # F := GF(2^f);
     F := GF(2); # Everything should work over GF(2) as well...
-    Q := Quiver(2^f-1, Concatenation(List([0..f-1], j -> List([1..2^f-1], 
-        i -> [i, (i+2*2^j-1) mod (2^f-1) +1, 
+    Q := Quiver(2^f-1, Concatenation(List([0..f-1], j -> List([1..2^f-1],
+        i -> [i, (i+2*2^j-1) mod (2^f-1) +1,
         Concatenation("a", String(i), "_", String(j))]))));
     kQ := PathAlgebra(F, Q);
     gens := GeneratorsOfAlgebra(kQ);
     e := gens{[1..2^f-1]};
-    a := List([0..f-1], j -> List([1..2^f-1], 
+    a := List([0..f-1], j -> List([1..2^f-1],
                                   i -> gens[2^f-1 + j*(2^f-1) + i]));
-    rels1 := Concatenation(List([1..2^f-1], i -> List([1..f], 
+    rels1 := Concatenation(List([1..2^f-1], i -> List([1..f],
         j -> a[j][i]*a[j][(i+2^j-1) mod (2^f-1) +1])));
-    rels2 := Concatenation(Concatenation(List([1..2^f-1], i -> List([1..f], 
-        j1 -> List(Filtered([1..f], x -> x <> j1), j2 -> 
-        a[j1][i]*a[j2][(i+2^j1-1) mod (2^f-1) + 1] 
+    rels2 := Concatenation(Concatenation(List([1..2^f-1], i -> List([1..f],
+        j1 -> List(Filtered([1..f], x -> x <> j1), j2 ->
+        a[j1][i]*a[j2][(i+2^j1-1) mod (2^f-1) + 1]
         - a[j2][i]*a[j1][(i+2^j2-1) mod (2^f-1) + 1])))));
     rels := Concatenation(rels1, rels2);
     A := kQ/rels;
-    name := Concatenation("F (C_2)^", String(f), " semidirect C_(2^", 
+    name := Concatenation("F (C_2)^", String(f), " semidirect C_(2^",
         String(f), " - 1)");
     return rec( name := name, A := A, Q := Q, F := F );
 end;
@@ -433,7 +433,13 @@ MakeSD3C2 := function(s, k)
     r:=GeneratorsOfAlgebra(kQ)[6];
     d:=GeneratorsOfAlgebra(kQ)[7];
     e:=GeneratorsOfAlgebra(kQ)[8];
-    A:=kQ/[b*r, r*d, e*r, r*g, g*b-d*e, (b*g)^k-r^s, (b*g)^(k-1)*b*d, (e*d)^(k-1)*e*g];
+    A:=kQ/[b*r, r*d, e*r, r*g, g*b-d*e, (g*b)^k-r^s, (b*g)^(k-1)*b*d, (e*d)^(k-1)*e*g];
+      # Ermann's book gives the relation "(b*g)^k-r^s" instead of "(g*b)^k-r^s",
+      # which implies the relations (b*g)^k=0 and r^s=0. This is a typo, and
+      # yields the algebra A from below modulo its socle, which is not symmetric.
+      # While we used the relations given in Erdmann's book for our paper, this
+      # does not affect the results on tau-tilting modules (as the socle gets
+      # factored out anyway). Thanks to Klaus Lux for pointing out the mistake.   
     return A;
 end;
 
@@ -509,8 +515,8 @@ MakeQ3A2 := function(k)
     g := GeneratorsOfAlgebra(kQ)[5];
     d := GeneratorsOfAlgebra(kQ)[6];
     e := GeneratorsOfAlgebra(kQ)[7];
-    A := kQ/[b*g*b-(b*d*e*g)^(k-1)*b*d*e, g*b*g-(d*e*g*b)^(k-1)*d*e*g, 
-        e*d*e-(e*g*b*d)^(k-1)*e*g*b, d*e*d-(g*b*d*e)^(k-1)*g*b*d, 
+    A := kQ/[b*g*b-(b*d*e*g)^(k-1)*b*d*e, g*b*g-(d*e*g*b)^(k-1)*d*e*g,
+        e*d*e-(e*g*b*d)^(k-1)*e*g*b, d*e*d-(g*b*d*e)^(k-1)*g*b*d,
         b*g*b*d, e*d*e*g];
     return A;
 end;
@@ -579,51 +585,51 @@ examples := [ ];
 MakeExamples := function()
     local ex, kQ, b, g, d, e, k, a, c;
     ex := rec( name := "Adachi-Iyama-Reiten Ex 6.3",
-            F := GF(5), 
+            F := GF(5),
             Q := Quiver(3, [[1,2], [2,3], [3,1]]) );
     kQ := PathAlgebra(ex.F, ex.Q);
     ex.A := kQ/AddNthPowerToRelations(kQ, [ ], 2);
     Add(examples, ex);
-    
+
     ex := rec( name := "Adachi-Iyama-Reiten Ex 6.4",
-            F := GF(5), 
+            F := GF(5),
             Q := Quiver(3, [[1,2], [2,3]]) );
     kQ := PathAlgebra(ex.F, ex.Q);
     ex.A := kQ/AddNthPowerToRelations(kQ, [ ], 2);
     Add(examples, ex);
-    
+
     Add(examples, MakeSL2Example(2));
-    
+
     ex := rec( name := "Square with 4th radical power equal to 0",
         F := GF(5),
         Q := Quiver(4, [[1,2], [2,3], [3,4], [4,1]]));
     kQ := PathAlgebra(ex.F, ex.Q);
     ex.A := kQ/AddNthPowerToRelations(kQ, [ ], 4);
-    Add(examples, ex); 
-    
+    Add(examples, ex);
+
     ex := rec( name := "Brauer tree * - * - * - *",
         F := GF(3),
         Q := Quiver(3, [[1,2], [2,1], [2,3], [3,2]]));
     kQ := PathAlgebra(ex.F, ex.Q);
-    a := GeneratorsOfAlgebra(kQ)[4]; 
-    b := GeneratorsOfAlgebra(kQ)[5]; 
-    c := GeneratorsOfAlgebra(kQ)[6]; 
+    a := GeneratorsOfAlgebra(kQ)[4];
+    b := GeneratorsOfAlgebra(kQ)[5];
+    c := GeneratorsOfAlgebra(kQ)[6];
     d := GeneratorsOfAlgebra(kQ)[7];
     ex.A := kQ/[ a*b*a, b*a*b, b*a-c*d, c*d*c, d*c*d, a*c, d*b];
-    Add(examples, ex);     
-    
-    
+    Add(examples, ex);
+
+
     ex := rec( name := "Brauer tree * - * - * - (2*)",
         F := GF(3),
         Q := Quiver(3, [[1,2], [2,1], [2,3], [3,2], [3, 3]]));
     kQ := PathAlgebra(ex.F, ex.Q);
-    a := GeneratorsOfAlgebra(kQ)[4]; 
-    b := GeneratorsOfAlgebra(kQ)[5]; 
-    c := GeneratorsOfAlgebra(kQ)[6]; 
+    a := GeneratorsOfAlgebra(kQ)[4];
+    b := GeneratorsOfAlgebra(kQ)[5];
+    c := GeneratorsOfAlgebra(kQ)[6];
     d := GeneratorsOfAlgebra(kQ)[7];
     e := GeneratorsOfAlgebra(kQ)[8];
     ex.A := kQ/[ a*b*a, b*a*b, b*a-c*d, c*d*c, d*c*d, a*c, d*b, c*e, e*d, e^2-d*c];
-    Add(examples, ex);     
+    Add(examples, ex);
 end;
 MakeExamples();
 
@@ -633,7 +639,7 @@ ListExamples := function()
         Print("* ", i, ": ", examples[i].name, "\n");
     od;
 end;
-# 
+#
 # Q := Quiver(["0","1","2"], [["1", "0", "\\beta"], ["0", "2", "\\delta"],
 #   ["2", "0", "\\eta"], ["0", "1", "\\gamma"]]);
 # KQ := PathAlgebra(GF(2), Q);
@@ -641,7 +647,7 @@ end;
 # delta := GeneratorsOfAlgebra(KQ)[5];
 # eta := GeneratorsOfAlgebra(KQ)[6];
 # gamma := GeneratorsOfAlgebra(KQ)[7];
-# I := Ideal(KQ, [beta*gamma, eta*delta, beta*delta*eta*gamma, delta*eta*gamma*beta, 
+# I := Ideal(KQ, [beta*gamma, eta*delta, beta*delta*eta*gamma, delta*eta*gamma*beta,
 #     eta*gamma*beta*delta, gamma*beta*delta*eta]);
 
 String2Txt := function(C)
@@ -660,10 +666,10 @@ ExtendString := function(KQ, I, str)
         # Make intermediate point (reverse direction)
         if LengthOfPath(str[m][2]) > 0 then
             for a in ar do
-                if TargetOfPath(a) = TargetOfPath(str[m][2]) and 
+                if TargetOfPath(a) = TargetOfPath(str[m][2]) and
                         a <> Reversed(WalkOfPath(str[m][2]))[1] then
                     Add(ret, Concatenation(str, [["I", a]]));
-                fi; 
+                fi;
             od;
         fi;
         # Extend current path
@@ -679,7 +685,7 @@ ExtendString := function(KQ, I, str)
             for a in ar do
                 if SourceOfPath(a) = SourceOfPath(str[m][2]) and a <> WalkOfPath(str[m][2])[1] then
                     Add(ret, Concatenation(str, [["D", a]]));
-                fi; 
+                fi;
             od;
         fi;
         # Extend current path
@@ -756,10 +762,10 @@ ProjectiveString := function(KQ, I, str_)
         if Size(ext) = 2 then return [["I", ext[1]], ["D", ext[2]]]; fi;
         Error("WTF?");
     fi;
-    
+
     # Length one may be special if the string is just a loose end:
     if Size(str) = 1 and IsLooseEnd(KQ, I, str[1][2]) then
-        ext := Filtered(ar, a -> SourceOfPath(a) = SourceOfPath(str[1][2]) and 
+        ext := Filtered(ar, a -> SourceOfPath(a) = SourceOfPath(str[1][2]) and
             a <> WalkOfPath(str[1][2])[1]);
         if Size(ext) = 0 then
             return [["D", SourceOfPath(str[1][2])]];
@@ -769,7 +775,7 @@ ProjectiveString := function(KQ, I, str_)
         fi;
         Error("WTF?");
     fi;
-    
+
     # Length > 1 (and length 1 without loose ends)
     if str[1][1] = "I" then
         if IsLooseEnd(KQ, I, str[1][2]) then
@@ -780,7 +786,7 @@ ProjectiveString := function(KQ, I, str_)
         fi;
     fi;
     if str[1][1] = "D" then
-        ext := Filtered(ar, a -> SourceOfPath(a) = SourceOfPath(str[1][2]) and 
+        ext := Filtered(ar, a -> SourceOfPath(a) = SourceOfPath(str[1][2]) and
             a <> WalkOfPath(str[1][2])[1]);
         if Size(ext) = 0 then
             Pstr := str;
@@ -788,7 +794,7 @@ ProjectiveString := function(KQ, I, str_)
             Pstr := Concatenation([["I", ext[1]]], str);
         fi;
     fi;
-    
+
     if Pstr[Size(Pstr)][1] = "D" then
         if IsLooseEnd(KQ, I, Pstr[Size(Pstr)][2]) then
             if Size(Pstr) = 1 then
@@ -798,12 +804,12 @@ ProjectiveString := function(KQ, I, str_)
             fi;
         else
             PstrP := Pstr;
-            PstrP[Size(Pstr)][2] := Filtered(List(ar, a -> Pstr[Size(Pstr)][2]*a), 
+            PstrP[Size(Pstr)][2] := Filtered(List(ar, a -> Pstr[Size(Pstr)][2]*a),
                 v -> not ElementOfPathAlgebra(KQ, v) in I)[1];
         fi;
     fi;
     if Pstr[Size(Pstr)][1] = "I" then
-        ext := Filtered(ar, a -> SourceOfPath(a) = SourceOfPath(Pstr[Size(Pstr)][2]) and 
+        ext := Filtered(ar, a -> SourceOfPath(a) = SourceOfPath(Pstr[Size(Pstr)][2]) and
             a <> WalkOfPath(Pstr[Size(Pstr)][2])[1]);
         if Size(ext) = 0 then
             PstrP := Pstr;
@@ -811,7 +817,7 @@ ProjectiveString := function(KQ, I, str_)
             PstrP := Concatenation(str, [["D", ext[1]]]);
         fi;
     fi;
-    
+
     return PstrP;
 end;
 
@@ -838,7 +844,7 @@ CheckCommonSubstringCondition := function(KQ, I, C, D)
       fi;
     od;
   fi;
-  
+
   D_ := ProjectiveString(KQ, I, D);
   if D_[1][1] = "D" then
     IPD_ := [["U", SourceOfPath(D_[1][2])]];
@@ -858,8 +864,8 @@ CheckCommonSubstringCondition := function(KQ, I, C, D)
       fi;
     od;
   fi;
-  
-  
+
+
   for i in [1.. Size(IPC_)] do
     for j in [1..Size(IPD_)] do
       if IPC_[i][1] = IPD_[j][1] and IPC_[i][2] = IPD_[j][2] and IPC_[i][1] in ["L", "U"] then
@@ -885,7 +891,7 @@ CheckCommonSubstringCondition := function(KQ, I, C, D)
 	            fi;
 	        fi;
 	    fi;
-	    
+
 	    cond := false;
 	    for sgn in [1,-1] do
 	        i_ := i;  j_ := j;
@@ -899,9 +905,9 @@ CheckCommonSubstringCondition := function(KQ, I, C, D)
 	            if IPC_[i_ + sgn][2] <> IPD_[j_ + sgn*ori][2] then
 	                break;
 	            fi;
-	            i_ := i_ + 2*sgn; j_ := j_ + 2*sgn*ori; 
+	            i_ := i_ + 2*sgn; j_ := j_ + 2*sgn*ori;
 	        od;
-	        
+
 	        if IPC_[i_][1] = "U" then
 	            if (i_ + 2*sgn <= 0) or (i_ + 2*sgn > Size(IPC_)) then
 	                cond := true; # C'_{i_+1} does not exist
@@ -921,7 +927,7 @@ CheckCommonSubstringCondition := function(KQ, I, C, D)
 		                    cond := true;
 		                fi;
 	                fi;
-	            fi;	    
+	            fi;
 	        fi;
 	    od;
 	    if not cond then
@@ -936,11 +942,11 @@ end;
 # Check if D is C-presilted
 CheckRelativeRigidness := function(KQ, I, C, D)
     local C_, D_, i, j, adjC, adjD, eD, eC, paths, p, a, factors, A, adjCidx, adjDidx;
-    
+
     if not CheckCommonSubstringCondition(KQ, I, C, D) then
       return false;
     fi;
-    
+
     A := KQ/I;
     paths := AsSet(Concatenation(List(Basis(A), b -> List(PathAlgebraElementTerms(b), v -> v.monom))));
     C_ := ProjectiveString(KQ, I, C);
@@ -949,16 +955,16 @@ CheckRelativeRigidness := function(KQ, I, C, D)
     fi;
     D_ := ProjectiveString(KQ, I, D);
     for i in [0..Size(C_)] do
-        if i mod 2 = 1 and C_[1][1] = "I" or i mod 2 = 0 and C_[1][1] = "D" then 
+        if i mod 2 = 1 and C_[1][1] = "I" or i mod 2 = 0 and C_[1][1] = "D" then
             continue; # not a lower intermediate point
-        fi; 
+        fi;
         adjCidx := Filtered([i, i+1], n -> n > 0 and n <= Size(C_));
         adjC := List(C_{Filtered([i, i+1], n -> n > 0 and n <= Size(C_))}, x -> x[2]);
         eC := TargetOfPath(adjC[1]);
         for j in [0..Size(D_)] do
-            if j mod 2 = 1 and D_[1][1] = "D" or j mod 2 = 0 and D_[1][1] = "I" then 
+            if j mod 2 = 1 and D_[1][1] = "D" or j mod 2 = 0 and D_[1][1] = "I" then
                 continue; # not an upper intermediate point
-            fi; 
+            fi;
             adjDidx := Filtered([j, j+1], n -> n > 0 and n <= Size(D_));
             adjD := List(D_{Filtered([j, j+1], n -> n > 0 and n <= Size(D_))}, x -> x[2]);
             if Size(D_) = 1 and LengthOfPath(D_[1][2]) = 0 then
@@ -968,7 +974,7 @@ CheckRelativeRigidness := function(KQ, I, C, D)
             fi;
             adjD := Filtered(adjD, x -> LengthOfPath(x) > 0);
             adjDidx := Filtered(adjDidx, x -> LengthOfPath(D_[x][2]) > 0);
-            
+
             # Check rigidness condition
             for p in paths do
                 factors := false;
@@ -984,7 +990,7 @@ CheckRelativeRigidness := function(KQ, I, C, D)
                 od;
                 for a in [1..Size(adjC)] do
                     if LengthOfPath(p) >= LengthOfPath(adjC[a]) then
-                        if String(Reversed(WalkOfPath(p)){[1..LengthOfPath(adjC[a])]}) 
+                        if String(Reversed(WalkOfPath(p)){[1..LengthOfPath(adjC[a])]})
                                     = String(Reversed(WalkOfPath(adjC[a]))) then
 			                factors := true;
                         fi;
@@ -1005,7 +1011,7 @@ CheckSupportOrthogonality := function(KQ, I, C, e)
     paths := AsSet(Concatenation(List(Basis(A), b -> List(PathAlgebraElementTerms(b), v -> v.monom))));
     C_ := ProjectiveString(KQ, I, C);
     for i in [0..Size(C_)] do
-        if i mod 2 = 1 and C_[1][1] = "D" or i mod 2 = 0 and C_[1][1] = "I" then 
+        if i mod 2 = 1 and C_[1][1] = "D" or i mod 2 = 0 and C_[1][1] = "I" then
             adjC := List(C_{Filtered([i, i+1], n -> n > 0 and n <= Size(C_))}, x -> x[2]);
             eC := TargetOfPath(adjC[1]);
             if Size(C_) = 1 and LengthOfPath(C_[1][2]) = 0 then
@@ -1013,15 +1019,15 @@ CheckSupportOrthogonality := function(KQ, I, C, e)
             fi;
             if e = eC and Size(adjC) = 2 then
                 return false; # interior condition not met
-            fi;    
+            fi;
             continue; # not an upper intermediate point
-        fi; 
+        fi;
         adjC := List(C_{Filtered([i, i+1], n -> n > 0 and n <= Size(C_))}, x -> x[2]);
         eC := SourceOfPath(adjC[1]);
         if Size(C_) = 1 and LengthOfPath(C_[1][2]) = 0 then
             adjC := [ ];
         fi;
-        
+
         # Check rigidness condition
         for p in paths do
             factors := false;
@@ -1053,15 +1059,15 @@ GVectorOfString := function(KQ, I, C)
         v[1][Position(vx, C_[1][2])] := 1;
         return v[1]-v[2];
     fi;
-    if C_[1][1] = "I" then 
+    if C_[1][1] = "I" then
         sgn := 0;
         v[2][Position(vx, TargetOfPath(C_[1][2]))] := 1;
-    else 
+    else
         sgn := 1;
         v[1][Position(vx, SourceOfPath(C_[1][2]))] := 1;
     fi;
     for i in [1..Size(C_)] do
-        if i mod 2 + sgn = 1 then 
+        if i mod 2 + sgn = 1 then
             v[1][Position(vx, SourceOfPath(C_[i][2]))] := v[1][Position(vx, SourceOfPath(C_[i][2]))] + 1;
         else
             v[2][Position(vx, TargetOfPath(C_[i][2]))] := v[2][Position(vx, TargetOfPath(C_[i][2]))] + 1;
@@ -1096,10 +1102,10 @@ end;
 
 MakeRigidTableForAlg := function(KQ, I, max)
     local rigids, C, D, ret, rel, rel2, highlight, lst, i, dict, Name, Idx, Comp, vx;
-    
+
     dict := [[[1,0,0], "P_0"], [[0,1,0], "P_1"], [[0,0,1], "P_2"],
         [[-1,0,0], "P_0^\\vee"], [[0,-1,0], "P_1^\\vee"], [[0,0,-1], "P_2^\\vee"],
-        [[1,-1,-1], "X"], [[-1, 1, 1], "X^\\vee"], 
+        [[1,-1,-1], "X"], [[-1, 1, 1], "X^\\vee"],
         [[1,-1,0], "M_2"], [[-1,1,0], "M_2^\\vee"],
         [[1,0,-1], "M_1"], [[-1,0,1], "M_1^\\vee"],
         [[0,1,-1], "M_0"], [[0,-1,1], "M_0^\\vee"],
@@ -1107,60 +1113,60 @@ MakeRigidTableForAlg := function(KQ, I, max)
         [[1,-2,0], "T_2"], [[-1,2,0], "T_2^\\vee"],
         [[1,-1,1], "Y"], [[-1,1,-1], "Y^\\vee"],
         [[1,1,-1], "Z"], [[-1,-1,1], "Z^\\vee"],
-        
+
         [[1,0], "P_0"], [[0,1], "P_1"],
         [[-1,0], "P_0^\\vee"], [[0,-1], "P_1^\\vee"],
         [[1,-2], "X"], [[-1,2], "X^\\vee"],
         [[1,-1], "Y"], [[-1,1], "Y^\\vee"] ];
-    
+
     Name := function(gv)
         local d;
         d := Filtered(dict, v -> v[1] = gv);
         if Size(d) > 0 then return d[1][2]; else return String(gv); fi;
     end;
-        
+
     Idx := function(gv)
         local d;
         d := Filtered([1..Size(dict)], v -> dict[v][1] = GVectorOfString(KQ, I, gv));
         if Size(d) > 0 then return d[1]; else return 100000; fi;
     end;
-    
+
     Comp := function(gv1, gv2)
         return Idx(gv1) < Idx(gv2);
     end;
-        
+
     ret := "";
     highlight := function(b)
         if b=true then return "\\mathbf"; else return ""; fi;
     end;
-    rigids := Filtered(RemoveDuplicateStrings(AllStringMaxLength(KQ, I, 10)), 
+    rigids := Filtered(RemoveDuplicateStrings(AllStringMaxLength(KQ, I, 10)),
         C -> CheckRelativeRigidness(KQ, I, C, C)=true);
     Sort(rigids, Comp);
-        
+
     vx := VerticesOfQuiver(QuiverOfPathAlgebra(KQ));
-        
+
     for C in rigids do
         rel := Filtered(rigids, D -> CheckRelativeRigidness(KQ, I, C, D)=true);
         rel := List(rel, D -> [GVectorOfString(KQ, I, D), highlight(CheckRelativeRigidness(KQ, I, D, C))]);
-        rel := Filtered(rel, r -> r[1] <> GVectorOfString(KQ, I, C)); 
-        
-        rel2 := Filtered([1..Size(vx)], e -> 
+        rel := Filtered(rel, r -> r[1] <> GVectorOfString(KQ, I, C));
+
+        rel2 := Filtered([1..Size(vx)], e ->
             CheckSupportOrthogonality(KQ, I, C, vx[e])=true);
         rel2 := List(rel2, i -> [-IdentityMat(Size(vx))[i], "\\mathbf"]);
-        
+
         rel := Concatenation(rel2, rel);
-            
+
         lst := "";
         for i in [1..Size(rel)] do
-            lst := Concatenation(lst, Concatenation("$", rel[i][2], "{", 
+            lst := Concatenation(lst, Concatenation("$", rel[i][2], "{",
                 Name(rel[i][1]), "}$"));
             if i <> Size(rel) then lst := Concatenation(lst, ", "); fi;
         od;
-        ret := Concatenation(ret, "$\\mathbf{", Name(GVectorOfString(KQ, I, C)), "}$ & $", String2Latex(C), "$ & $", String2Latex(ProjectiveString(KQ, I, C)), "$ & $", 
+        ret := Concatenation(ret, "$\\mathbf{", Name(GVectorOfString(KQ, I, C)), "}$ & $", String2Latex(C), "$ & $", String2Latex(ProjectiveString(KQ, I, C)), "$ & $",
             String(GVectorOfString(KQ, I, C)), "$ & ", lst ,"\\\\\n");
     od;
     return ret;
-end; 
+end;
 
 MakeHead := function(name, out)
     PrintTo(out, "\\renewcommand\\arraystretch{1.5}\n\\tiny\\begin{longtable}{ccccc}\n");
@@ -1174,16 +1180,16 @@ MakeFoot := function(out)
 end;
 
 #############################################################################################
-# Methods used for double-checking that the tau-rigid modules and presilting strings we 
+# Methods used for double-checking that the tau-rigid modules and presilting strings we
 # are correct. Essentially, these are used for checking that the construction
 # used in HasseQuiver(...) coincides with the purely combinatorial description using string.
-# HasseQuiverCheck is useful for checking that the actual diagrams in our paper are correct.  
+# HasseQuiverCheck is useful for checking that the actual diagrams in our paper are correct.
 
 SanityCheck := function(KQ, I)
     local A, rigidM, rigidS, gvM, gvS, ll, i, j, b1, b2;
     A := KQ/I;
     rigidM := Flat(HasseQuiver(A,100)[1]);
-    gvM := List(rigidM, M -> DimensionVector(TopOfModule(M))- 
+    gvM := List(rigidM, M -> DimensionVector(TopOfModule(M))-
         DimensionVector(TopOfModule(1stSyzygy(M))));
     ll := RemoveDuplicateStrings(AllStringMaxLength(KQ, I, 10));
     rigidS := Filtered(ll, str -> CheckRelativeRigidness(KQ, I, str, str)=true);
@@ -1213,10 +1219,10 @@ end;
 
 HasseQuiverCheck := function(KQ, I, out)
     local q, dict, Name,  v, w;
-    
+
     dict := [[[1,0,0], "P_0"], [[0,1,0], "P_1"], [[0,0,1], "P_2"],
         [[-1,0,0], "P_0^\\vee"], [[0,-1,0], "P_1^\\vee"], [[0,0,-1], "P_2^\\vee"],
-        [[1,-1,-1], "X"], [[-1, 1, 1], "X^\\vee"], 
+        [[1,-1,-1], "X"], [[-1, 1, 1], "X^\\vee"],
         [[1,-1,0], "M_2"], [[-1,1,0], "M_2^\\vee"],
         [[1,0,-1], "M_1"], [[-1,0,1], "M_1^\\vee"],
         [[0,1,-1], "M_0"], [[0,-1,1], "M_0^\\vee"],
@@ -1224,20 +1230,20 @@ HasseQuiverCheck := function(KQ, I, out)
         [[1,-2,0], "T_2"], [[-1,2,0], "T_2^\\vee"],
         [[1,-1,1], "Y"], [[-1,1,-1], "Y^\\vee"],
         [[1,1,-1], "Z"], [[-1,-1,1], "Z^\\vee"],
-        
+
         [[1,0], "P_0"], [[0,1], "P_1"],
         [[-1,0], "P_0^\\vee"], [[0,-1], "P_1^\\vee"],
         [[1,-2], "X"], [[-1,2], "X^\\vee"],
         [[1,-1], "Y"], [[-1,1], "Y^\\vee"] ];
-    
+
     Name := function(gv)
         local d;
         d := Filtered(dict, v -> v[1] = gv);
         if Size(d) > 0 then return d[1][2]; else return String(gv); fi;
     end;
-    
+
     q := HasseQuiver(KQ/I, 100)[1];
-    q := List(q, v -> List(v, M -> DimensionVector(TopOfModule(M))- 
+    q := List(q, v -> List(v, M -> DimensionVector(TopOfModule(M))-
         DimensionVector(TopOfModule(1stSyzygy(M)))));
     q := List(q, v -> List(v, Name));
     for v in q do
@@ -1257,7 +1263,7 @@ end;
 
 MakeRigidTable := function(fname)
     local Q, beta, delta, eta, gamma, lambda, kappa, alpha, KQ, I, name, out, check, check2;
-    
+
     check := false;
     check2 := false;
     out := OutputTextFile(fname, false);
@@ -1265,7 +1271,7 @@ MakeRigidTable := function(fname)
 
     # R2(AB)
     name := "R(2AB)";
-    Q := Quiver(["0","1"], [["0", "1", "\\beta"],  ["1", "0", "\\gamma"], 
+    Q := Quiver(["0","1"], [["0", "1", "\\beta"],  ["1", "0", "\\gamma"],
         ["0", "0", "\\alpha"]]);
     KQ := PathAlgebra(GF(2), Q);
     beta := GeneratorsOfAlgebra(KQ)[3];
@@ -1295,7 +1301,7 @@ MakeRigidTable := function(fname)
     if check2 then HasseQuiverCheck(KQ, I, out); fi;
     PrintTo(out, "}\n");
     if check then Print("Checking ", name, "\n"); SanityCheck(KQ, I); fi;
-    
+
 
     # R3(ABD)
     name := "R(3ABD)";
@@ -1306,7 +1312,7 @@ MakeRigidTable := function(fname)
     delta := GeneratorsOfAlgebra(KQ)[5];
     eta := GeneratorsOfAlgebra(KQ)[6];
     gamma := GeneratorsOfAlgebra(KQ)[7];
-    I := Ideal(KQ, [beta*gamma, eta*delta, beta*delta*eta*gamma, delta*eta*gamma*beta, 
+    I := Ideal(KQ, [beta*gamma, eta*delta, beta*delta*eta*gamma, delta*eta*gamma*beta,
     eta*gamma*beta*delta, gamma*beta*delta*eta]);
     PrintTo(out, "\\newcommand{\\RthreeABD}{");
     MakeHead(name, out);
@@ -1315,7 +1321,7 @@ MakeRigidTable := function(fname)
     if check2 then HasseQuiverCheck(KQ, I, out); fi;
     PrintTo(out, "}\n");
     if check then Print("Checking ", name, "\n"); SanityCheck(KQ, I); fi;
-        
+
     # R3(C)
     name := "R(3C)";
     Q := Quiver(["0","1","2"], [["1", "0", "\\beta"], ["0", "2", "\\delta"],
@@ -1333,7 +1339,7 @@ MakeRigidTable := function(fname)
     if check2 then HasseQuiverCheck(KQ, I, out); fi;
     PrintTo(out, "}\n");
     if check then Print("Checking ", name, "\n"); SanityCheck(KQ, I); fi;
-        
+
     # R3(H)
     name := "R(3H)";
     Q := Quiver(["0","1","2"], [["0", "1", "\\beta"], ["1", "2", "\\delta"],
@@ -1344,7 +1350,7 @@ MakeRigidTable := function(fname)
     eta := GeneratorsOfAlgebra(KQ)[6];
     gamma := GeneratorsOfAlgebra(KQ)[7];
     lambda := GeneratorsOfAlgebra(KQ)[8];
-    I := Ideal(KQ, [delta*lambda, lambda*beta, eta*delta, delta*eta, 
+    I := Ideal(KQ, [delta*lambda, lambda*beta, eta*delta, delta*eta,
         beta*gamma, gamma*beta, eta*gamma]);
     PrintTo(out, "\\newcommand{\\RthreeH}{");
     MakeHead(name, out);
@@ -1365,7 +1371,7 @@ MakeRigidTable := function(fname)
     gamma := GeneratorsOfAlgebra(KQ)[7];
     lambda := GeneratorsOfAlgebra(KQ)[8];
     kappa := GeneratorsOfAlgebra(KQ)[9];
-    I := Ideal(KQ, [beta*delta, delta*lambda, lambda*beta, 
+    I := Ideal(KQ, [beta*delta, delta*lambda, lambda*beta,
         gamma*kappa, kappa*eta, eta*gamma, beta*gamma, gamma*beta,
         lambda*kappa, kappa*lambda, delta*eta, eta*delta]);
     PrintTo(out, "\\newcommand{\\RthreeK}{");
@@ -1391,9 +1397,9 @@ MakeRigidTable := function(fname)
     PrintTo(out, MakeRigidTableForAlg(KQ, I, 10));
     MakeFoot(out);
     if check2 then HasseQuiverCheck(KQ, I, out); fi;
-    PrintTo(out, "}\n");    
+    PrintTo(out, "}\n");
     if check then Print("Checking ", name, "\n"); SanityCheck(KQ, I); fi;
-    
+
      # W(Q3A1)
     name := "W(Q(3A)_1)";
     Q := Quiver(["0","1","2"], [["1", "0", "\\beta"], ["0", "2", "\\delta"],
@@ -1403,14 +1409,14 @@ MakeRigidTable := function(fname)
     delta := GeneratorsOfAlgebra(KQ)[5];
     eta := GeneratorsOfAlgebra(KQ)[6];
     gamma := GeneratorsOfAlgebra(KQ)[7];
-    I := Ideal(KQ, [beta*gamma, gamma*beta, delta*eta, eta*delta, beta*delta*eta, 
+    I := Ideal(KQ, [beta*gamma, gamma*beta, delta*eta, eta*delta, beta*delta*eta,
         delta*eta*gamma, gamma*beta*delta, eta*gamma*beta]);
     PrintTo(out, "\\newcommand{\\WthreeQA}{");
     MakeHead(name, out);
     PrintTo(out, MakeRigidTableForAlg(KQ, I, 10));
     MakeFoot(out);
     if check2 then HasseQuiverCheck(KQ, I, out); fi;
-    PrintTo(out, "}\n");    
+    PrintTo(out, "}\n");
     if check then Print("Checking ", name, "\n"); SanityCheck(KQ, I); fi;
 
     # W3(F)
@@ -1422,7 +1428,7 @@ MakeRigidTable := function(fname)
     delta := GeneratorsOfAlgebra(KQ)[5];
     eta := GeneratorsOfAlgebra(KQ)[6];
     lambda := GeneratorsOfAlgebra(KQ)[7];
-    I := Ideal(KQ, [delta*eta, eta*delta, lambda*beta, beta*delta*lambda, 
+    I := Ideal(KQ, [delta*eta, eta*delta, lambda*beta, beta*delta*lambda,
         delta*lambda*beta, lambda*beta*delta]);
     PrintTo(out, "\\newcommand{\\WthreeF}{");
     MakeHead(name, out);
@@ -1440,7 +1446,7 @@ MakeRigidTable := function(fname)
     beta := GeneratorsOfAlgebra(KQ)[4];
     delta := GeneratorsOfAlgebra(KQ)[5];
     lambda := GeneratorsOfAlgebra(KQ)[6];
-    I := Ideal(KQ, [beta*delta*lambda, 
+    I := Ideal(KQ, [beta*delta*lambda,
         delta*lambda*beta, lambda*beta*delta]);
     PrintTo(out, "\\newcommand{\\WthreeQLR}{");
     MakeHead(name, out);
@@ -1449,7 +1455,7 @@ MakeRigidTable := function(fname)
     if check2 then HasseQuiverCheck(KQ, I, out); fi;
     PrintTo(out, "}\n");
     if check then Print("Checking ", name, "\n"); SanityCheck(KQ, I); fi;
-    
+
     CloseStream(out);
 end;
 
@@ -1460,23 +1466,23 @@ end;
 #     delta := GeneratorsOfAlgebra(KQ)[5];
 #     eta := GeneratorsOfAlgebra(KQ)[6];
 #     gamma := GeneratorsOfAlgebra(KQ)[7];
-#     I := Ideal(KQ, [beta*gamma, eta*delta, beta*delta*eta*gamma, delta*eta*gamma*beta, 
+#     I := Ideal(KQ, [beta*gamma, eta*delta, beta*delta*eta*gamma, delta*eta*gamma*beta,
 #     eta*gamma*beta*delta, gamma*beta*delta*eta]);
 #    ll := RemoveDuplicateStrings(AllStringMaxLength(KQ, I, 10));
 #     rigid := Filtered(ll, str -> CheckRelativeRigidness(KQ, I, str, str)=true);
 #     # T1 := rigid[6];
 #     # M1 := rigid[8];
 #      XX := [["D", VerticesOfQuiver(Q)[1]]];
-# 
+#
 
 
 ###############################################################################
 # Graded algebras and generalized separated quivers (was used for an earlier approach
-# to the problem considered in our paper; loosely related to Adachi's paper on 
+# to the problem considered in our paper; loosely related to Adachi's paper on
 # hereditary algebras.
 
 Res := function(A, M)
-    local As, K, Q, Qs, n, dimv, a, arQs, vxQs, matsAs, matsa, v0, v1, idx, 
+    local As, K, Q, Qs, n, dimv, a, arQs, vxQs, matsAs, matsa, v0, v1, idx,
         mat, ret_mat, x1, y1, x0, y0, x, y, i;
     As := RightActingAlgebra(M);
     K := LeftActingDomain(M);
@@ -1487,8 +1493,8 @@ Res := function(A, M)
     vxQs := List(VerticesOfQuiver(Qs), String);
     matsAs := MatricesOfPathAlgebraModule(M);
     ret_mat := [];
-    dimv := List(VerticesOfQuiver(Q), v -> Sum(List([1..n], i -> 
-        DimensionVector(M)[Position(vxQs, Concatenation(String(v), "_", 
+    dimv := List(VerticesOfQuiver(Q), v -> Sum(List([1..n], i ->
+        DimensionVector(M)[Position(vxQs, Concatenation(String(v), "_",
         String(i)))])));
     for a in ArrowsOfQuiver(Q) do
         matsa := List([1..n-1], i ->
@@ -1505,19 +1511,19 @@ Res := function(A, M)
         y0 := 1;
         for i in [1..n-1] do
             y0 := y0 + DimensionVector(M)[Position(vxQs, Concatenation(v1, "_", String(i)))];
-            if DimensionVector(M)[Position(vxQs, 
-                Concatenation(v0, "_", String(i)))] <> 0 and 
-                DimensionVector(M)[Position(vxQs, 
+            if DimensionVector(M)[Position(vxQs,
+                Concatenation(v0, "_", String(i)))] <> 0 and
+                DimensionVector(M)[Position(vxQs,
                 Concatenation(v0, "_", String(i+1)))] <> 0 then
-                        
+
                     x1 := Size(matsa[i]);
                     y1 := Size(matsa[i][1]);
                     for x in [0..x1-1] do
                         for y in [0..y1-1] do
-                            mat[x0+x][y0+y] := matsa[i][1+x][1+y]; 
+                            mat[x0+x][y0+y] := matsa[i][1+x][1+y];
                         od;
                     od;
-                        
+
             fi;
             x0 := x0 + DimensionVector(M)[Position(vxQs, Concatenation(v0, "_", String(i)))];
         od;
@@ -1535,9 +1541,9 @@ SingleSubquiversSS := function(Q)
     subsets := Combinations([1..Size(V)]);
     lst := [];
     for idx in subsets do
-        vx := Concatenation(V{idx}, V_{Filtered([1..Size(V)], 
+        vx := Concatenation(V{idx}, V_{Filtered([1..Size(V)],
             x -> not x in idx)});
-        QS := FullSubquiver(SS, Filtered(VerticesOfQuiver(SS), 
+        QS := FullSubquiver(SS, Filtered(VerticesOfQuiver(SS),
             vv -> String(vv) in vx));
         Append(lst, ConnectedComponentsOfQuiver(QS));
     od;
@@ -1556,30 +1562,30 @@ ExpandRep := function(kQ, M)
     Qsarnames := List(ArrowsOfQuiver(QuiverOfPathAlgebra(kQs)), String);
     Qnames := List(VerticesOfQuiver(QuiverOfPathAlgebra(kQ)), String);
     dims := DimensionVector(M);
-    dim := List(VerticesOfQuiver(QuiverOfPathAlgebra(kQ)), function(v) 
+    dim := List(VerticesOfQuiver(QuiverOfPathAlgebra(kQ)), function(v)
         if String(v) in Qsnames then
             return dims[Position(Qsnames, String(v))];
         else
-            return Sum(List(Filtered(List(IncomingArrowsOfVertex(v), 
+            return Sum(List(Filtered(List(IncomingArrowsOfVertex(v),
                 a -> String(SourceOfPath(a))), s -> s in Qsnames),
                 x -> dims[Position(Qsnames, x)]));
         fi; end
     );
     lst := [];
     for a in ArrowsOfQuiver(QuiverOfPathAlgebra(kQ)) do
-        if dim[Position(Qnames, String(SourceOfPath(a)))] = 0 
+        if dim[Position(Qnames, String(SourceOfPath(a)))] = 0
                 or dim[Position(Qnames, String(TargetOfPath(a)))] = 0 then
             continue;
         fi;
         if String(a) in Qsarnames then
-            Add(lst, [String(a), 
-                MatricesOfPathAlgebraModule(M)[Position(Qsarnames, 
+            Add(lst, [String(a),
+                MatricesOfPathAlgebraModule(M)[Position(Qsarnames,
                 String(a))]]);
         elif String(SourceOfPath(a)) in Qsnames then
-            ars := Filtered(ArrowsOfQuiver(QuiverOfPathAlgebra(kQ)), 
-                b -> TargetOfPath(b) = TargetOfPath(a) 
+            ars := Filtered(ArrowsOfQuiver(QuiverOfPathAlgebra(kQ)),
+                b -> TargetOfPath(b) = TargetOfPath(a)
                 and String(SourceOfPath(b)) in Qsnames);
-            ddims := List(ars, b -> dims[Position(Qsnames, 
+            ddims := List(ars, b -> dims[Position(Qsnames,
                 String(SourceOfPath(b)))]);
             pos := Position(ars, a);
             mat := One(F) * IdentityMat(Sum(ddims)){
@@ -1587,7 +1593,7 @@ ExpandRep := function(kQ, M)
             Add(lst, [String(a), mat]);
         else
             Add(lst, [String(a), One(F) * NullMat(
-                dim[Position(Qnames, String(SourceOfPath(a)))], 
+                dim[Position(Qnames, String(SourceOfPath(a)))],
                 dim[Position(Qnames, String(TargetOfPath(a)))])]);
         fi;
     od;
@@ -1596,10 +1602,10 @@ ExpandRep := function(kQ, M)
 end;
 
 CalculateFinv := function(kQ, M)
-    # Takes a tau-rigid kQs-module M with conditions (see Theorem 3.2 in 
+    # Takes a tau-rigid kQs-module M with conditions (see Theorem 3.2 in
     # Adachi's paper) and turns it into a tau-rigid kQ-module (rad^2(kQ) = 0)
     # Note: Qs is the separated quiver of Q.
-    local kQs, Qnames, Qsnames, dims, dimt, dim, lst, ars, a, mat, idxs, 
+    local kQs, Qnames, Qsnames, dims, dimt, dim, lst, ars, a, mat, idxs,
           idxt, i;
     kQs := RightActingAlgebra(M);
     Qnames := List(VerticesOfQuiver(QuiverOfPathAlgebra(kQ)), String);
@@ -1622,14 +1628,14 @@ CalculateFinv := function(kQ, M)
     ars := List(ArrowsOfQuiver(QuiverOfPathAlgebra(kQ)), String);
     for a in List(ArrowsOfQuiver(QuiverOfPathAlgebra(kQs)), String) do
         mat := MatricesOfPathAlgebraModule(M)[
-            Position(List(ArrowsOfQuiver(QuiverOfPathAlgebra(kQs)), String), 
+            Position(List(ArrowsOfQuiver(QuiverOfPathAlgebra(kQs)), String),
             a)];
         idxs := Position(Qnames, String(SourceOfPath(ArrowsOfQuiver(
             QuiverOfPathAlgebra(kQ))[Position(ars, a)])));
         idxt := Position(Qnames, String(TargetOfPath(ArrowsOfQuiver(
             QuiverOfPathAlgebra(kQ))[Position(ars, a)])));
-        if dims[idxs] = 0 or dimt[idxt] = 0 then       
-            continue; 
+        if dims[idxs] = 0 or dimt[idxt] = 0 then
+            continue;
         fi;
         mat := List(IdentityMat(dim[idxs]), v -> v{[1..dims[idxs]]})*mat*
             IdentityMat(dim[idxt]){[dims[idxt]+1..dim[idxt]]};
@@ -1645,7 +1651,7 @@ nSeparatedQuiver := function(Q, n)
     vertQs := Concatenation(List(vertQ, v -> List([1..n], i -> Concatenation(
         String(v), "_" , String(i)
     ))));
-    arQs := Concatenation(List(arQ, a -> List([1..n-1], i -> 
+    arQs := Concatenation(List(arQ, a -> List([1..n-1], i ->
         [Concatenation(String(SourceOfPath(a)), "_", String(i)),
          Concatenation(String(TargetOfPath(a)), "_", String(i+1)),
          Concatenation(String(a), "_", String(i))
@@ -1655,7 +1661,7 @@ end;
 
 ## Maybe TODO: add relations!!!
 nSeparatedAlgebra := function(A, n)
-    return PathAlgebra(LeftActingDomain(A), 
+    return PathAlgebra(LeftActingDomain(A),
         nSeparatedQuiver(QuiverOfPathAlgebra(A), n));
 end;
 
@@ -1670,10 +1676,10 @@ FunctorF := function(As, M) # Turn M into a As-module
     rad := [[M, IdentityMapping(M), TopOfModuleProjection(M)]];
     for i in [1..n-1] do
         map := RadicalOfModuleInclusion(rad[Size(rad)][1]);
-        Add(rad, [Source(map), map*rad[Size(rad)][2], 
+        Add(rad, [Source(map), map*rad[Size(rad)][2],
             TopOfModuleProjection(Source(map))]);
     od;
-    
+
     for i in [1..n] do
         Add(rad[i], []);
         for v in VerticesOfQuiver(Q) do
@@ -1681,12 +1687,12 @@ FunctorF := function(As, M) # Turn M into a As-module
             if ForAll(mm, IsZero) then
                 Add(rad[i][4], fail);
             else
-                Add(rad[i][4], SubRepresentationInclusion(Range(rad[i][3]), 
+                Add(rad[i][4], SubRepresentationInclusion(Range(rad[i][3]),
                     mm));
             fi;
         od;
     od;
-    
+
     dimv := List(VerticesOfQuiver(Qs), String);
     for v in VerticesOfQuiver(Q) do
         for i in [1..n] do
@@ -1698,7 +1704,7 @@ FunctorF := function(As, M) # Turn M into a As-module
                 RadicalSeries(M)[i][Position(VerticesOfQuiver(Q), v)];
         od;
     od;
-    
+
     mats := [];
     for a in ArrowsOfQuiver(Q) do
         for i in [1..n-1] do
@@ -1708,14 +1714,13 @@ FunctorF := function(As, M) # Turn M into a As-module
             if src = fail or tar = fail then
                 continue;
             fi;
-            src := List(Basis(Source(src)), b -> ImageElm(rad[i][2], 
+            src := List(Basis(Source(src)), b -> ImageElm(rad[i][2],
                 PreImagesRepresentative(rad[i][3], ImageElm(src, b))));
-            mat := List(src, s -> Coefficients(Basis(Source(tar)), 
-                PreImagesRepresentative(tar, ImageElm(rad[i+1][3], 
+            mat := List(src, s -> Coefficients(Basis(Source(tar)),
+                PreImagesRepresentative(tar, ImageElm(rad[i+1][3],
                 PreImagesRepresentative(rad[i+1][2], s^(One(A)*a))))));
             Add(mats, [Concatenation(String(a), "_", String(i)), mat]);
         od;
     od;
     return RightModuleOverPathAlgebra(As, dimv, mats);
 end;
-
