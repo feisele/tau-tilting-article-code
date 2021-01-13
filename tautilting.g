@@ -22,7 +22,7 @@ DiagonalJoin := function(L)
             Error("DiagonalJoin expects its arguments to be matrices");
         fi;
 
-        M := MutableNullMat(Sum(List(L, l -> Size(l))), Sum(List(L, l -> Size(TransposedMat(l)))),
+        M := NullMat(Sum(List(L, l -> Size(l))), Sum(List(L, l -> Size(TransposedMat(l)))),
             DefaultField(L[1][1][1]));
         posr := 0;
         posc := 0;
@@ -1505,7 +1505,7 @@ Res := function(A, M)
             dimv[Position(List(VerticesOfQuiver(Q), String), v1)] = 0 then
                 continue;
         fi;
-        mat := One(K)*MutableNullMat(dimv[Position(List(VerticesOfQuiver(Q), String), v0)],
+        mat := One(K)*NullMat(dimv[Position(List(VerticesOfQuiver(Q), String), v0)],
             dimv[Position(List(VerticesOfQuiver(Q), String), v1)], K);
         x0 := 1;
         y0 := 1;
